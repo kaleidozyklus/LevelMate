@@ -27,6 +27,8 @@ class PrinterLevelingHelperApp(QMainWindow):
 
         self.z_head_lift_for_moving = 50.0
 
+        self.gcode_in_process = False
+
         # UI Setup
         self.init_ui()
 
@@ -48,6 +50,7 @@ class PrinterLevelingHelperApp(QMainWindow):
         self.printer_connection_settings.shutdown_connection.connect(self.on_shutdown_connection)
 
         self.mesh_point_grid.moveHeadToPosition.connect(self.on_move_head_to_position)
+        self.mesh_point_grid.valueChanged.connect(self.on_mesh_bed_level_point_value_changed)
 
         self.printer_control.home_button_clicked_signal.connect(self.on_home_head)
         self.printer_control.load_mesh_button_clicked_signal.connect(self.on_load_mesh)
@@ -74,6 +77,7 @@ class PrinterLevelingHelperApp(QMainWindow):
     def send_gcode_command(self, gcode_command):
         try:
             if self.serial_connection:
+                self.gcode_in_process = True
                 # Sende das G-Code Kommando an die serielle Schnittstelle
                 self.serial_connection.write((gcode_command + '\n').encode())
                 ok_received = False
@@ -83,10 +87,13 @@ class PrinterLevelingHelperApp(QMainWindow):
                     # Lese die Antwort und dekodiere sie
                     response += self.serial_connection.readline().decode('utf-8', errors='ignore')
                     ok_received = response.endswith("ok\n") and self.serial_connection.in_waiting == 0
+                self.gcode_in_process = False
                 return response
             else:
+                self.gcode_in_process = False
                 raise Exception("Serial connection is not established.")
         except serial.SerialException as e:
+            self.gcode_in_process = False
             raise Exception(f"Serial exception occurred: {e}")
 
     @QtCore.pyqtSlot()
@@ -155,6 +162,10 @@ class PrinterLevelingHelperApp(QMainWindow):
             self.send_gcode_command(f"M114")
 
             self.mesh_point_grid.set_head_is_positioned_at(row, col)
+
+    def on_mesh_bed_level_point_value_changed(self, row, col, value):
+        if self.serial_connection:
+            self.send_gcode_command(f"G0 Z{value}")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

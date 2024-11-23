@@ -9,6 +9,7 @@ class MeshPointGrid(QWidget):
     Widget-Klasse für ein 5x5-Gitter von MeshPointBedLevel-Widgets.
     """
     moveHeadToPosition = pyqtSignal(int, int, float)  # Signal für "Move Head" Button
+    valueChanged = pyqtSignal(int, int, float)  # Signal für Wertänderungen
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -29,6 +30,7 @@ class MeshPointGrid(QWidget):
                 self.grid_layout.addWidget(self.mesh_point[row][col], row, col)
 
                 self.mesh_point[row][col].moveHeadToPosition.connect(self.on_move_head_to_position)
+                self.mesh_point[row][col].valueChanged.connect(self.on_mesh_point_bed_level_value_changed)
 
         # Optional: Abstände setzen
         self.grid_layout.setSpacing(10)  # Abstand zwischen Widgets
@@ -59,3 +61,6 @@ class MeshPointGrid(QWidget):
         self.head_is_at_row = row
         self.head_is_at_col = col
         self.mesh_point[4-row][col].set_head_is_positioned_here(True)
+
+    def on_mesh_point_bed_level_value_changed(self, row, col, value):
+        self.valueChanged.emit(row, col, value)

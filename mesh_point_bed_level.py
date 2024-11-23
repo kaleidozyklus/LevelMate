@@ -5,7 +5,7 @@ from PyQt5.QtSvg import QSvgRenderer
 
 
 class MeshPointBedLevel(QtWidgets.QFrame):
-    valueChanged = pyqtSignal(float)  # Define the signal
+    valueChanged = pyqtSignal(int, int, float)  # Define the signal
     moveHeadToPosition = pyqtSignal(int, int, float)  # Define the signal
 
     def __init__(self, row, col, parent=None):
@@ -175,8 +175,8 @@ class MeshPointBedLevel(QtWidgets.QFrame):
 
     def set_value(self, value):
         """Setzt den Wert der QDoubleSpinBox auf value."""
-        self.current_value = value
-        self.value_doubleSpinBox.setValue(value)
+        self.current_value = round(value, 2)
+        self.value_doubleSpinBox.setValue(self.current_value)
 
     def change_value(self, delta):
         """Ändert den Wert der QDoubleSpinBox um delta."""
@@ -191,11 +191,10 @@ class MeshPointBedLevel(QtWidgets.QFrame):
     def on_spinbox_value_changed(self, new_value):
         """Slot, der aufgerufen wird, wenn sich der Wert der QDoubleSpinBox ändert."""
         self.update_ui()
-        if self.current_value != new_value:
-            self.valueChanged.emit(new_value)  # Emit the signal
+        self.valueChanged.emit(self.row, self.col,round(new_value-self.current_value,2))  # Emit the signal
 
     def on_move_head_to_position(self):
-        self.moveHeadToPosition.emit(self.row, self.col, self.value_doubleSpinBox.value()-self.current_value)
+        self.moveHeadToPosition.emit(self.row, self.col, round(self.value_doubleSpinBox.value()-self.current_value,2))
 
     def set_head_is_positioned_here(self, is_positioned_here):
         """Setzt den Text des Head Position Indicator Labels."""
