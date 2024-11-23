@@ -65,6 +65,7 @@ class PrinterLevelingHelperApp(QMainWindow):
 
         self.printer_control.home_button_clicked_signal.connect(self.on_home_head)
         self.printer_control.load_mesh_button_clicked_signal.connect(self.on_load_mesh)
+        self.printer_control.store_mesh_button_clicked_signal.connect(self.on_store_mesh)
         self.printer_control.target_bed_temperature_changed_signal.connect(self.on_set_target_bed_temperature)
 
     @QtCore.pyqtSlot()
@@ -156,6 +157,19 @@ class PrinterLevelingHelperApp(QMainWindow):
 
             else:
                 return None
+
+    def on_store_mesh(self):
+        if self.serial_connection:
+            self.setCursor(Qt.WaitCursor)
+            self.store_bed_levels()
+            self.setCursor(Qt.ArrowCursor)
+
+    def store_bed_levels(self):
+        if self.serial_connection:
+            for i in range(5):
+                for j in range(5):
+                    value = self.mesh_point_grid.get_value(i, j)
+                    self.send_gcode_command(f"M421 I{j} J{i} Z{value}")
 
     def on_move_head_to_position(self, row, col, z):
         if self.serial_connection:

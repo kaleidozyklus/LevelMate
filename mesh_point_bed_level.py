@@ -178,6 +178,9 @@ class MeshPointBedLevel(QtWidgets.QFrame):
         self.current_value = round(value, 2)
         self.value_doubleSpinBox.setValue(self.current_value)
 
+    def get_value(self):
+        return self.value_doubleSpinBox.value
+
     def change_value(self, delta):
         """Ändert den Wert der QDoubleSpinBox um delta."""
         spinbox_value = self.value_doubleSpinBox.value()

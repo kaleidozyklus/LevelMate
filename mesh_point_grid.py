@@ -49,6 +49,10 @@ class MeshPointGrid(QWidget):
         widget = self.grid_layout.itemAtPosition(4-row, col).widget()
         widget.set_value(value)
 
+    def get_value(self, row, col):
+        widget = self.grid_layout.itemAtPosition(4-row, col).widget()
+        return widget.get_value()
+
     def on_move_head_to_position(self, row, col, z):
         if self.head_is_at_row is None or self.head_is_at_col is None or self.head_is_at_row != row or self.head_is_at_col != col:
             if self.head_is_at_row is not None and self.head_is_at_col is not None:
