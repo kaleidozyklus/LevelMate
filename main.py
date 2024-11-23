@@ -2,10 +2,12 @@
 
 import sys
 import time
+import re
 from http.client import responses
 
 import serial
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 from PyQt5.QtGui import QIcon
 from PyQt5 import QtCore
@@ -29,8 +31,17 @@ class PrinterLevelingHelperApp(QMainWindow):
 
         self.gcode_in_process = False
 
+        # Erstelle einen QTimer
+        self.timer = QTimer(self)
+
+        # Verbinde das Timeout-Signal mit der Funktion
+        self.timer.timeout.connect(self.on_update_temperatures)
+
         # UI Setup
         self.init_ui()
+
+        # Starte den Timer mit einem Intervall von 1 Sekunde (1000 ms)
+        self.timer.start(5000)
 
     def init_ui(self):
         self.central_widget = QWidget(self)
@@ -54,6 +65,7 @@ class PrinterLevelingHelperApp(QMainWindow):
 
         self.printer_control.home_button_clicked_signal.connect(self.on_home_head)
         self.printer_control.load_mesh_button_clicked_signal.connect(self.on_load_mesh)
+        self.printer_control.target_bed_temperature_changed_signal.connect(self.on_set_target_bed_temperature)
 
     @QtCore.pyqtSlot()
     def on_establish_connection(self):
@@ -108,7 +120,6 @@ class PrinterLevelingHelperApp(QMainWindow):
             self.send_gcode_command("M400")
             self.send_gcode_command("M114")
 
-
     @QtCore.pyqtSlot()
     def on_load_mesh(self):
         self.setCursor(Qt.WaitCursor)
@@ -157,7 +168,6 @@ class PrinterLevelingHelperApp(QMainWindow):
             self.send_gcode_command(f"G0 Z{self.z_head_lift_for_moving}")
             self.send_gcode_command(f"G42 I{col} J{row}")
             self.send_gcode_command(f"G0 Z{z}")
-
             self.send_gcode_command(f"M400")
             self.send_gcode_command(f"M114")
 
@@ -166,6 +176,26 @@ class PrinterLevelingHelperApp(QMainWindow):
     def on_mesh_bed_level_point_value_changed(self, row, col, value):
         if self.serial_connection:
             self.send_gcode_command(f"G0 Z{value}")
+
+    @QtCore.pyqtSlot(float)
+    def on_set_target_bed_temperature(self, target_bed_temperature):
+        if self.serial_connection:
+            self.send_gcode_command(f"M140 S{round(target_bed_temperature)}")
+
+    @QtCore.pyqtSlot()
+    def on_update_temperatures(self):
+        if not self.gcode_in_process and self.serial_connection:
+            self.serial_connection.write(('M105\n').encode())
+            ok_received = False
+            response = ""
+            while not ok_received:
+                response += self.serial_connection.readline().decode('utf-8', errors='ignore')
+                ok_received = response.startswith("ok") and self.serial_connection.in_waiting == 0
+            match = re.search(r'B:(\d+\.\d+)', response)
+
+            if match:
+                bed_temp = float(match.group(1))
+                self.printer_control.update_current_bed_temperature(bed_temp)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
