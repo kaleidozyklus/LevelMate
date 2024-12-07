@@ -151,11 +151,10 @@ class LevelMate(QMainWindow):
                     self.mesh_point_grid.set_value(row, col, value)
 
     def store_bed_levels(self):
-        if self.serial_connection:
-            for i in range(5):
-                for j in range(5):
-                    value = self.mesh_point_grid.get_value(i, j)
-                    self.printerCommandQueue.send_gcode(f"M421 I{j} J{i} Z{value}")
+        for i in range(5):
+            for j in range(5):
+                value = self.mesh_point_grid.get_value(i, j)
+                self.printerCommandQueue.send_gcode(f"M421 I{j} J{i} Z{value}")
 
     def move_head_to_position(self, row, col, z):
         self.printerCommandQueue.send_gcode(f"G0 Z{self.z_head_lift_for_moving}")
