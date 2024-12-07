@@ -5,3 +5,4 @@ PyQt5-Qt5==5.15.15
 PyQt5_sip==12.15.0
 pyserial==3.5
 PyYAML==6.0.2
+qasync==0.27.1

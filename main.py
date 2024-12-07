@@ -14,10 +14,10 @@ from printer_connection_settings import PrinterConnectionSettings  # Importiere 
 from printer_control import PrinterControl
 from printer_command_queue import PrinterCommandQueue
 
-class PrinterLevelingHelperApp(QMainWindow):
+class LevelMate(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("3D Printer Leveling Helper")
+        self.setWindowTitle("Level Mate - 3D Printer Leveling Helper")
         self.setGeometry(100, 100, 800, 600)
         self.setWindowIcon(QIcon("printer_icon.png"))
 
@@ -190,6 +190,6 @@ class PrinterLevelingHelperApp(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = PrinterLevelingHelperApp()
+    window = LevelMate()
     window.show()
     sys.exit(app.exec_())
