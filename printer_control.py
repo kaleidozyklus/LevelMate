@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout, QTo
 class PrinterControl(QWidget):
     # Definieren von benutzerdefinierten Signalen
     home_button_clicked_signal = pyqtSignal()
+    autolevel_bed_signal = pyqtSignal()
     load_mesh_button_clicked_signal = pyqtSignal()
     store_mesh_button_clicked_signal = pyqtSignal()
     target_bed_temperature_changed_signal = pyqtSignal(float)
@@ -22,10 +23,16 @@ class PrinterControl(QWidget):
         horizontal_layout_3 = QHBoxLayout()
 
         # Home button
-        self.toolButton = QToolButton(self)
-        self.toolButton.setText("Home")
-        self.toolButton.clicked.connect(self.on_home_button_clicked)  # Signal connected to slot
-        horizontal_layout_3.addWidget(self.toolButton)
+        self.home_head_toolButton = QToolButton(self)
+        self.home_head_toolButton.setText("Home")
+        self.home_head_toolButton.clicked.connect(self.on_home_button_clicked)  # Signal connected to slot
+        horizontal_layout_3.addWidget(self.home_head_toolButton)
+
+        # Home button
+        self.autolevel_bed_toolButton = QToolButton(self)
+        self.autolevel_bed_toolButton.setText("Autolevel")
+        self.autolevel_bed_toolButton.clicked.connect(self.on_autolevel_bed_button_clicked)  # Signal connected to slot
+        horizontal_layout_3.addWidget(self.autolevel_bed_toolButton)
 
         # Load Mesh button
         self.toolButton_2 = QToolButton(self)
@@ -92,6 +99,9 @@ class PrinterControl(QWidget):
     def on_home_button_clicked(self):
         """Handle Home button click."""
         self.home_button_clicked_signal.emit()  # Emit the signal
+
+    def on_autolevel_bed_button_clicked(self):
+        self.autolevel_bed_signal.emit()  # Emit the signal
 
     def on_load_mesh_button_clicked(self):
         """Handle Load Mesh button click."""
